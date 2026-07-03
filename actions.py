@@ -9,7 +9,7 @@ def is_valid_name(name):
 
 
 def is_valid_section(section):
-    pattern = r"^(10|11|12)[A-Z]$"
+    pattern = r"^[0-9]{1,2}[A-Z]$"
     return re.match(pattern, section) is not None
 
 

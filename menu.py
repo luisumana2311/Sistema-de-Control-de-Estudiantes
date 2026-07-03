@@ -26,25 +26,43 @@ def show_menu(students):
 
         if option == "1":
             add_students(students)
+
         elif option == "2":
             show_students(students)
+
         elif option == "3":
             show_top_three_students(students)
+
         elif option == "4":
             show_general_average(students)
+
         elif option == "5":
             export_to_csv(students)
+
         elif option == "6":
-            imported_students = import_from_csv()
-            if imported_students is not None:
-                students.clear()
-                students.extend(imported_students)
+            confirmation = input(
+                "Importing a CSV will replace the current student list. Do you want to continue? (yes/no): "
+            ).strip().lower()
+
+            if confirmation == "yes":
+                imported_students = import_from_csv()
+
+                if imported_students is not None:
+                    students.clear()
+                    students.extend(imported_students)
+                    print("Students imported successfully.")
+            else:
+                print("Import cancelled.")
+
         elif option == "7":
             delete_student(students)
+
         elif option == "8":
             show_failed_students(students)
+
         elif option == "9":
             print("Exiting system...")
             break
+
         else:
             print("Invalid option. Please try again.")
