@@ -1,4 +1,4 @@
-from actions import (
+from .actions import (
     add_students,
     edit_student,
     get_confirmation,
@@ -9,7 +9,7 @@ from actions import (
     delete_student,
     show_failed_students,
 )
-from data import export_to_csv, import_from_csv
+from .data import export_to_csv, import_from_csv
 
 
 MENU_OPTIONS = {

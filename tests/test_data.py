@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-import data
+from student_control_system import data
 
 
 class TestData(unittest.TestCase):

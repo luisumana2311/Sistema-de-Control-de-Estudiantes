@@ -1,8 +1,10 @@
 import unittest
+from unittest.mock import patch
 
-from actions import (
+from student_control_system.actions import (
     build_student_table,
     calculate_average,
+    get_confirmation,
     find_student,
     get_failed_subjects,
     is_valid_grade,
@@ -98,6 +100,13 @@ class TestActions(unittest.TestCase):
         self.assertIn("Name", table)
         self.assertIn("Maria Lopez", table)
         self.assertIn("75.00", table)
+
+    def test_confirmation_accepts_short_answers(self):
+        with patch("builtins.input", side_effect=["y"]):
+            self.assertTrue(get_confirmation("Continue?"))
+
+        with patch("builtins.input", side_effect=["n"]):
+            self.assertFalse(get_confirmation("Continue?"))
 
 
 if __name__ == "__main__":

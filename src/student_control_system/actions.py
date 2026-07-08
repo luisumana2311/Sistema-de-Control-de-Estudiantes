@@ -111,8 +111,11 @@ def get_confirmation(message):
     while True:
         confirmation = input(f"{message} (yes/no): ").strip().lower()
 
-        if confirmation in ("yes", "no"):
-            return confirmation == "yes"
+        if confirmation in ("yes", "y"):
+            return True
+
+        if confirmation in ("no", "n"):
+            return False
 
         print("Invalid response. Please type 'yes' or 'no'.")
 
@@ -289,6 +292,10 @@ def search_student(students):
 
     search_term = input("Enter the name or part of the name to search: ").strip()
     results = search_students_by_name(students, search_term)
+
+    if not search_term:
+        print("Search term cannot be empty.")
+        return
 
     if not results:
         print("No students matched your search.")

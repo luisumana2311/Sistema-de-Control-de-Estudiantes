@@ -1,7 +1,7 @@
 import csv
 import os
 
-from actions import (
+from .actions import (
     STUDENT_FIELDS,
     SUBJECTS,
     is_valid_grade,
@@ -24,9 +24,9 @@ def export_to_csv(students):
             writer.writeheader()
             writer.writerows(students)
 
-        print("Data exported successfully.")
+        print(f"Data exported successfully to {FILE_NAME}.")
     except Exception as error:
-        print(f"An error occurred while exporting data: {error}")
+        print(f"Export failed: {error}")
 
 
 def validate_csv_headers(fieldnames):
@@ -85,9 +85,9 @@ def import_from_csv():
             for row_number, row in enumerate(reader, start=2):
                 students.append(build_student_from_row(row, row_number))
 
-        print("Data imported successfully.")
+        print(f"Data imported successfully from {FILE_NAME}.")
         return students
 
     except Exception as error:
-        print(f"An error occurred while importing data: {error}")
+        print(f"Import failed: {error}")
         return None

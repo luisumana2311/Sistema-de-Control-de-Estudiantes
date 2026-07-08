@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from menu import get_menu_option
+from student_control_system.menu import get_menu_option
 
 
 class TestMenu(unittest.TestCase):
