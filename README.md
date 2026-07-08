@@ -1,13 +1,15 @@
 # Student Control System
 
-A Python console application for managing student records, grades, academic averages, CSV import/export, and failed-subject reports.
+A Python console application for managing student records, grades, academic averages, CSV import/export, search, editing, and academic reports.
 
 This project started as a fundamentals exercise and is being improved as a professional junior/full-stack portfolio project. The current version keeps the original console experience while adding cleaner structure, validations, error handling, tests, and project documentation.
 
 ## Features
 
 - Register students with full name and section.
-- Validate names, sections, and grades.
+- Validate names, sections, grades, menu options, and confirmations.
+- Search students by full or partial name.
+- Edit an existing student's name, section, and grades.
 - Show all registered students with subject grades and average.
 - Show the top 3 students by average.
 - Calculate the general class average.
@@ -15,6 +17,7 @@ This project started as a fundamentals exercise and is being improved as a profe
 - Show students with failed subjects.
 - Export student records to CSV.
 - Import student records from CSV.
+- Display reports in aligned console tables.
 
 ## Technologies
 
@@ -24,18 +27,19 @@ This project started as a fundamentals exercise and is being improved as a profe
   - `os`
   - `re`
   - `unittest`
+  - `unittest.mock`
 
 ## Project Structure
 
 ```text
 student_control_system/
-├── actions.py      # Business rules, validation, and student operations
-├── data.py         # CSV persistence
-├── main.py         # Application entry point
-├── menu.py         # Console menu and user flow
-├── tests/          # Unit tests
-├── .gitignore      # Ignored generated/local files
-└── README.md       # Project documentation
++-- actions.py      # Business rules, validation, reports, and student operations
++-- data.py         # CSV persistence
++-- main.py         # Application entry point
++-- menu.py         # Console menu and user flow
++-- tests/          # Unit tests
++-- .gitignore      # Ignored generated/local files
++-- README.md       # Project documentation
 ```
 
 ## Installation
@@ -69,6 +73,22 @@ source .venv/bin/activate
 python main.py
 ```
 
+## Main Menu
+
+```text
+1. Add students
+2. Show all students
+3. Search student by name
+4. Edit student
+5. Show top 3 students
+6. Show general average
+7. Export data to CSV
+8. Import data from CSV
+9. Delete student
+10. Show failed students
+11. Exit
+```
+
 ## Running Tests
 
 ```bash
@@ -93,6 +113,8 @@ Suggested screenshots:
 
 - Main menu.
 - Student registration flow.
+- Search results.
+- Edit student flow.
 - Student list.
 - Top 3 students report.
 - Failed students report.
@@ -100,6 +122,7 @@ Suggested screenshots:
 ```md
 ![Main menu](docs/screenshots/main-menu.png)
 ![Student list](docs/screenshots/student-list.png)
+![Search results](docs/screenshots/search-results.png)
 ```
 
 ## Roadmap
@@ -114,10 +137,12 @@ Suggested screenshots:
 
 ### P1 - Functional Improvements
 
-- [ ] Add edit-student functionality.
-- [ ] Add search and filters by section or academic status.
+- [x] Add edit-student functionality.
+- [x] Add search by student name.
+- [x] Improve console formatting for reports.
+- [x] Add clearer menu validation.
 - [ ] Add automatic loading or save confirmation.
-- [ ] Improve console formatting for reports.
+- [ ] Add filters by section or academic status.
 - [ ] Add summary reports by section.
 
 ### P2 - Portfolio Differentiators
