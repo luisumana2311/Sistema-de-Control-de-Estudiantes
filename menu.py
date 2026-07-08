@@ -1,5 +1,8 @@
 from actions import (
     add_students,
+    edit_student,
+    get_confirmation,
+    search_student,
     show_students,
     show_top_three_students,
     show_general_average,
@@ -9,20 +12,39 @@ from actions import (
 from data import export_to_csv, import_from_csv
 
 
+MENU_OPTIONS = {
+    "1": "Add students",
+    "2": "Show all students",
+    "3": "Search student by name",
+    "4": "Edit student",
+    "5": "Show top 3 students",
+    "6": "Show general average",
+    "7": "Export data to CSV",
+    "8": "Import data from CSV",
+    "9": "Delete student",
+    "10": "Show failed students",
+    "11": "Exit",
+}
+
+
+def get_menu_option():
+    while True:
+        option = input("Choose an option: ").strip()
+
+        if option in MENU_OPTIONS:
+            return option
+
+        valid_options = ", ".join(MENU_OPTIONS.keys())
+        print(f"Invalid option. Choose one of: {valid_options}.")
+
+
 def show_menu(students):
     while True:
         print("\n===== Student Control System =====")
-        print("1. Add students")
-        print("2. Show all students")
-        print("3. Show top 3 students")
-        print("4. Show general average")
-        print("5. Export data to CSV")
-        print("6. Import data from CSV")
-        print("7. Delete student")
-        print("8. Show failed students")
-        print("9. Exit")
+        for option, label in MENU_OPTIONS.items():
+            print(f"{option}. {label}")
 
-        option = input("Choose an option: ")
+        option = get_menu_option()
 
         if option == "1":
             add_students(students)
@@ -31,20 +53,24 @@ def show_menu(students):
             show_students(students)
 
         elif option == "3":
-            show_top_three_students(students)
+            search_student(students)
 
         elif option == "4":
-            show_general_average(students)
+            edit_student(students)
 
         elif option == "5":
-            export_to_csv(students)
+            show_top_three_students(students)
 
         elif option == "6":
-            confirmation = input(
-                "Importing a CSV will replace the current student list. Do you want to continue? (yes/no): "
-            ).strip().lower()
+            show_general_average(students)
 
-            if confirmation == "yes":
+        elif option == "7":
+            export_to_csv(students)
+
+        elif option == "8":
+            if get_confirmation(
+                "Importing a CSV will replace the current student list. Do you want to continue?"
+            ):
                 imported_students = import_from_csv()
 
                 if imported_students is not None:
@@ -54,15 +80,12 @@ def show_menu(students):
             else:
                 print("Import cancelled.")
 
-        elif option == "7":
+        elif option == "9":
             delete_student(students)
 
-        elif option == "8":
+        elif option == "10":
             show_failed_students(students)
 
-        elif option == "9":
+        elif option == "11":
             print("Exiting system...")
             break
-
-        else:
-            print("Invalid option. Please try again.")

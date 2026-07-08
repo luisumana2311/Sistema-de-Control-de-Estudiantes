@@ -1,12 +1,16 @@
 import unittest
 
 from actions import (
+    build_student_table,
     calculate_average,
+    find_student,
     get_failed_subjects,
     is_valid_grade,
     is_valid_name,
     is_valid_section,
+    search_students_by_name,
     student_exists,
+    update_student,
 )
 
 
@@ -48,6 +52,52 @@ class TestActions(unittest.TestCase):
 
         self.assertTrue(student_exists(students, "maria lopez", "11b"))
         self.assertFalse(student_exists(students, "Maria Lopez", "10A"))
+
+    def test_finds_student_by_name_and_section(self):
+        students = [self.student]
+
+        self.assertIs(find_student(students, " maria lopez ", "11b"), self.student)
+        self.assertIsNone(find_student(students, "Maria Lopez", "10A"))
+
+    def test_searches_students_by_partial_name(self):
+        students = [
+            self.student,
+            {
+                "full_name": "Carlos Mora",
+                "section": "10A",
+                "spanish_grade": 80.0,
+                "english_grade": 82.0,
+                "social_studies_grade": 84.0,
+                "science_grade": 86.0,
+            },
+        ]
+
+        self.assertEqual(search_students_by_name(students, "maria"), [self.student])
+        self.assertEqual(search_students_by_name(students, "lopez"), [self.student])
+        self.assertEqual(search_students_by_name(students, ""), [])
+
+    def test_updates_student(self):
+        update_student(
+            self.student,
+            "Maria Fernandez",
+            "12C",
+            {
+                "spanish_grade": 100.0,
+                "unknown_field": 0.0,
+            },
+        )
+
+        self.assertEqual(self.student["full_name"], "Maria Fernandez")
+        self.assertEqual(self.student["section"], "12C")
+        self.assertEqual(self.student["spanish_grade"], 100.0)
+        self.assertNotIn("unknown_field", self.student)
+
+    def test_builds_student_table(self):
+        table = build_student_table([self.student])
+
+        self.assertIn("Name", table)
+        self.assertIn("Maria Lopez", table)
+        self.assertIn("75.00", table)
 
 
 if __name__ == "__main__":
