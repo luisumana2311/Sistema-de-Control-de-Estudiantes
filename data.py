@@ -1,6 +1,14 @@
 import csv
 import os
 
+from actions import (
+    STUDENT_FIELDS,
+    SUBJECTS,
+    is_valid_grade,
+    is_valid_name,
+    is_valid_section,
+)
+
 
 FILE_NAME = "students.csv"
 
@@ -12,22 +20,54 @@ def export_to_csv(students):
 
     try:
         with open(FILE_NAME, mode="w", newline="", encoding="utf-8") as file:
-            fieldnames = [
-                "full_name",
-                "section",
-                "spanish_grade",
-                "english_grade",
-                "social_studies_grade",
-                "science_grade",
-            ]
-
-            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer = csv.DictWriter(file, fieldnames=STUDENT_FIELDS)
             writer.writeheader()
             writer.writerows(students)
 
         print("Data exported successfully.")
     except Exception as error:
         print(f"An error occurred while exporting data: {error}")
+
+
+def validate_csv_headers(fieldnames):
+    if fieldnames is None:
+        raise ValueError("The CSV file is empty.")
+
+    missing_fields = [field for field in STUDENT_FIELDS if field not in fieldnames]
+
+    if missing_fields:
+        raise ValueError(f"Missing required columns: {', '.join(missing_fields)}")
+
+
+def build_student_from_row(row, row_number):
+    full_name = row["full_name"].strip()
+    section = row["section"].strip().upper()
+
+    if not is_valid_name(full_name):
+        raise ValueError(f"Invalid full name in row {row_number}.")
+
+    if not is_valid_section(section):
+        raise ValueError(f"Invalid section in row {row_number}.")
+
+    student = {
+        "full_name": full_name,
+        "section": section,
+    }
+
+    for subject, field_name in SUBJECTS:
+        try:
+            grade = float(row[field_name])
+        except ValueError as error:
+            raise ValueError(f"Invalid {subject} grade in row {row_number}.") from error
+
+        if not is_valid_grade(grade):
+            raise ValueError(
+                f"{subject} grade in row {row_number} must be between 0 and 100."
+            )
+
+        student[field_name] = grade
+
+    return student
 
 
 def import_from_csv():
@@ -40,18 +80,10 @@ def import_from_csv():
     try:
         with open(FILE_NAME, mode="r", encoding="utf-8") as file:
             reader = csv.DictReader(file)
+            validate_csv_headers(reader.fieldnames)
 
-            for row in reader:
-                student = {
-                    "full_name": row["full_name"],
-                    "section": row["section"],
-                    "spanish_grade": float(row["spanish_grade"]),
-                    "english_grade": float(row["english_grade"]),
-                    "social_studies_grade": float(row["social_studies_grade"]),
-                    "science_grade": float(row["science_grade"]),
-                }
-
-                students.append(student)
+            for row_number, row in enumerate(reader, start=2):
+                students.append(build_student_from_row(row, row_number))
 
         print("Data imported successfully.")
         return students

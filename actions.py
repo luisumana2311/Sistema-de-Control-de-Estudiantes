@@ -1,7 +1,22 @@
 import re
 
 
-SUBJECTS = ["Spanish", "English", "Social Studies", "Science"]
+PASSING_GRADE = 60
+MIN_GRADE = 0
+MAX_GRADE = 100
+
+SUBJECTS = (
+    ("Spanish", "spanish_grade"),
+    ("English", "english_grade"),
+    ("Social Studies", "social_studies_grade"),
+    ("Science", "science_grade"),
+)
+
+STUDENT_FIELDS = (
+    "full_name",
+    "section",
+    *(field_name for _, field_name in SUBJECTS),
+)
 
 
 def is_valid_name(name):
@@ -11,6 +26,10 @@ def is_valid_name(name):
 def is_valid_section(section):
     pattern = r"^[0-9]{1,2}[A-Z]$"
     return re.match(pattern, section) is not None
+
+
+def is_valid_grade(grade):
+    return MIN_GRADE <= grade <= MAX_GRADE
 
 
 def student_exists(students, full_name, section):
@@ -48,22 +67,29 @@ def get_valid_grade(subject):
         try:
             grade = float(input(f"Enter {subject} grade: "))
 
-            if 0 <= grade <= 100:
+            if is_valid_grade(grade):
                 return grade
 
-            print("Grade must be between 0 and 100.")
+            print(f"Grade must be between {MIN_GRADE} and {MAX_GRADE}.")
         except ValueError:
             print("Invalid input. Please enter a number.")
 
 
 def calculate_average(student):
-    total = (
-        student["spanish_grade"]
-        + student["english_grade"]
-        + student["social_studies_grade"]
-        + student["science_grade"]
-    )
-    return total / 4
+    total = sum(student[field_name] for _, field_name in SUBJECTS)
+    return total / len(SUBJECTS)
+
+
+def get_failed_subjects(student):
+    failed_subjects = []
+
+    for subject, field_name in SUBJECTS:
+        grade = student[field_name]
+
+        if grade < PASSING_GRADE:
+            failed_subjects.append((subject, grade))
+
+    return failed_subjects
 
 
 def add_students(students):
@@ -91,11 +117,10 @@ def add_students(students):
         student = {
             "full_name": full_name,
             "section": section,
-            "spanish_grade": get_valid_grade("Spanish"),
-            "english_grade": get_valid_grade("English"),
-            "social_studies_grade": get_valid_grade("Social Studies"),
-            "science_grade": get_valid_grade("Science"),
         }
+
+        for subject, field_name in SUBJECTS:
+            student[field_name] = get_valid_grade(subject)
 
         students.append(student)
         print("Student added successfully.")
@@ -114,10 +139,10 @@ def show_students(students):
         print("\n--------------------------")
         print(f"Full name: {student['full_name']}")
         print(f"Section: {student['section']}")
-        print(f"Spanish: {student['spanish_grade']}")
-        print(f"English: {student['english_grade']}")
-        print(f"Social Studies: {student['social_studies_grade']}")
-        print(f"Science: {student['science_grade']}")
+
+        for subject, field_name in SUBJECTS:
+            print(f"{subject}: {student[field_name]}")
+
         print(f"Average: {average:.2f}")
 
 
@@ -195,16 +220,7 @@ def show_failed_students(students):
     print("\n===== Failed Students =====")
 
     for student in students:
-        failed_subjects = []
-
-        if student["spanish_grade"] < 60:
-            failed_subjects.append(("Spanish", student["spanish_grade"]))
-        if student["english_grade"] < 60:
-            failed_subjects.append(("English", student["english_grade"]))
-        if student["social_studies_grade"] < 60:
-            failed_subjects.append(("Social Studies", student["social_studies_grade"]))
-        if student["science_grade"] < 60:
-            failed_subjects.append(("Science", student["science_grade"]))
+        failed_subjects = get_failed_subjects(student)
 
         if failed_subjects:
             found_failed_students = True
