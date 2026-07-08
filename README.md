@@ -1,5 +1,9 @@
 # Student Control System
 
+![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
+![Tests](https://img.shields.io/badge/tests-unittest-green)
+![Status](https://img.shields.io/badge/status-portfolio%20ready-brightgreen)
+
 A Python console application for managing student records, grades, academic averages, CSV import/export, search, editing, and academic reports.
 
 This project started as a fundamentals exercise and is being improved as a professional junior/full-stack portfolio project. The current version keeps the original console experience while adding cleaner structure, validations, error handling, tests, and project documentation.
@@ -33,13 +37,19 @@ This project started as a fundamentals exercise and is being improved as a profe
 
 ```text
 student_control_system/
-+-- actions.py      # Business rules, validation, reports, and student operations
-+-- data.py         # CSV persistence
-+-- main.py         # Application entry point
-+-- menu.py         # Console menu and user flow
-+-- tests/          # Unit tests
-+-- .gitignore      # Ignored generated/local files
-+-- README.md       # Project documentation
++-- .github/workflows/       # GitHub Actions CI
++-- docs/                    # Portfolio documentation and screenshots
++-- src/
+|   +-- student_control_system/
+|       +-- actions.py        # Business rules, validation, reports, and operations
+|       +-- data.py           # CSV persistence
+|       +-- menu.py           # Console menu and user flow
+|       +-- __init__.py       # Package marker
++-- tests/                    # Unit tests
++-- main.py                   # Console entry point
++-- CHANGELOG.md              # Project history
++-- CONTRIBUTING.md           # Contribution guidelines
++-- README.md                 # Project documentation
 ```
 
 ## Installation
@@ -95,6 +105,8 @@ python main.py
 python -m unittest discover
 ```
 
+Tests also run automatically through GitHub Actions on pushes and pull requests.
+
 ## CSV Format
 
 The CSV file uses the following columns:
@@ -125,6 +137,8 @@ Suggested screenshots:
 ![Search results](docs/screenshots/search-results.png)
 ```
 
+More screenshot guidance is available in [docs/README.md](docs/README.md).
+
 ## Roadmap
 
 ### P0 - Professional Foundation
@@ -147,8 +161,10 @@ Suggested screenshots:
 
 ### P2 - Portfolio Differentiators
 
-- [ ] Reorganize into a `src/` package architecture.
-- [ ] Add CI with GitHub Actions.
+- [x] Reorganize into a `src/` package architecture.
+- [x] Add CI with GitHub Actions.
+- [x] Add documentation folder for screenshots.
+- [x] Add CHANGELOG and CONTRIBUTING files.
 - [ ] Add code formatting and linting.
 - [ ] Add a web UI or REST API while reusing the domain logic.
 - [ ] Add real screenshots and a short architecture section.
