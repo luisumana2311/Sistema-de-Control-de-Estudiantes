@@ -11,6 +11,8 @@ env/
 htmlcov/
 
 students.csv
+.env
+*.db
 
 .DS_Store
 Thumbs.db

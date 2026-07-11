@@ -26,12 +26,15 @@ This project started as a fundamentals exercise and is being improved as a profe
 ## Technologies
 
 - Python 3
-- Standard library only:
+- Python standard-library modules:
   - `csv`
   - `os`
   - `re`
   - `unittest`
   - `unittest.mock`
+- PostgreSQL as the production database
+- SQLAlchemy 2 for ORM and repository-based persistence
+- Alembic for versioned database migrations
 
 ## Project Structure
 
@@ -82,6 +85,20 @@ source .venv/bin/activate
 ```bash
 python main.py
 ```
+
+### Database foundation
+
+Copy `.env.example` to `.env`, configure a PostgreSQL connection through
+`DATABASE_URL`, install the project dependencies, and apply migrations:
+
+```bash
+python -m pip install -e .
+alembic upgrade head
+```
+
+The console workflow remains available while the PostgreSQL repository becomes
+the persistence foundation for the upcoming REST API. SQLite is used only by
+isolated repository tests, not as the target production database.
 
 ## Main Menu
 
