@@ -35,6 +35,7 @@ This project started as a fundamentals exercise and is being improved as a profe
 - PostgreSQL as the production database
 - SQLAlchemy 2 for ORM and repository-based persistence
 - Alembic for versioned database migrations
+- FastAPI with automatic OpenAPI documentation
 
 ## Project Structure
 
@@ -96,9 +97,22 @@ python -m pip install -e .
 alembic upgrade head
 ```
 
-The console workflow remains available while the PostgreSQL repository becomes
-the persistence foundation for the upcoming REST API. SQLite is used only by
+The console workflow remains available while the PostgreSQL repository provides
+the persistence foundation for the REST API. SQLite is used only by
 isolated repository tests, not as the target production database.
+
+### REST API
+
+Start the API after configuring PostgreSQL and applying the migrations:
+
+```bash
+uvicorn student_control_system.api:app --reload
+```
+
+The service exposes its health check at `/health`, student CRUD under
+`/api/v1/students`, interactive Swagger documentation at `/docs`, and alternative
+ReDoc documentation at `/redoc`. Student listings support search, section filters,
+and pagination.
 
 ## Main Menu
 

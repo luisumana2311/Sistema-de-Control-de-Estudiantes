@@ -12,6 +12,7 @@ class StudentRepository:
         self._validate(student_data)
         student = Student(
             full_name=student_data["full_name"].strip(),
+            full_name_key=student_data["full_name"].strip().casefold(),
             section=student_data["section"].strip().upper(),
         )
         student.grades = [
@@ -22,9 +23,22 @@ class StudentRepository:
         self.session.commit()
         return student
 
-    def list_all(self):
-        statement = select(Student).order_by(Student.section, Student.full_name)
+    def list_all(self, offset=0, limit=50, search=None, section=None):
+        statement = select(Student)
+        if search:
+            statement = statement.where(func.lower(Student.full_name).contains(search.strip().lower()))
+        if section:
+            statement = statement.where(func.upper(Student.section) == section.strip().upper())
+        statement = statement.order_by(Student.section, Student.full_name).offset(offset).limit(limit)
         return list(self.session.scalars(statement).unique())
+
+    def count(self, search=None, section=None):
+        statement = select(func.count()).select_from(Student)
+        if search:
+            statement = statement.where(func.lower(Student.full_name).contains(search.strip().lower()))
+        if section:
+            statement = statement.where(func.upper(Student.section) == section.strip().upper())
+        return self.session.scalar(statement) or 0
 
     def get(self, student_id):
         return self.session.get(Student, student_id)
@@ -43,6 +57,20 @@ class StudentRepository:
         self.session.delete(student)
         self.session.commit()
         return True
+
+    def update(self, student_id, student_data):
+        self._validate(student_data)
+        student = self.get(student_id)
+        if student is None:
+            return None
+        student.full_name = student_data["full_name"].strip()
+        student.full_name_key = student.full_name.casefold()
+        student.section = student_data["section"].strip().upper()
+        grades = {grade.subject: grade for grade in student.grades}
+        for _, field_name in SUBJECTS:
+            grades[field_name].score = float(student_data[field_name])
+        self.session.commit()
+        return student
 
     @staticmethod
     def to_dict(student):

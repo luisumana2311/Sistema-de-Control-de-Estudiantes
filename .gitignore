@@ -13,6 +13,7 @@ htmlcov/
 students.csv
 .env
 *.db
+*.egg-info/
 
 .DS_Store
 Thumbs.db
