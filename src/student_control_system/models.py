@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import CheckConstraint, DateTime, Float, ForeignKey, Index, String, UniqueConstraint, func
+from sqlalchemy import CheckConstraint, DateTime, Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
@@ -13,9 +13,11 @@ def utc_now():
 
 class Student(Base):
     __tablename__ = "students"
+    __table_args__ = (UniqueConstraint("full_name_key", "section", name="uq_student_name_section"),)
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     full_name: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
+    full_name_key: Mapped[str] = mapped_column(String(120), nullable=False)
     section: Mapped[str] = mapped_column(String(3), nullable=False, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
@@ -34,11 +36,3 @@ class Grade(Base):
     subject: Mapped[str] = mapped_column(String(40), nullable=False)
     score: Mapped[float] = mapped_column(Float, nullable=False)
     student: Mapped[Student] = relationship(back_populates="grades")
-
-
-Index(
-    "uq_student_name_section_ci",
-    func.lower(Student.full_name),
-    func.upper(Student.section),
-    unique=True,
-)
