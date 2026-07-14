@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 
 from .actions import SUBJECTS, is_valid_grade, is_valid_name, is_valid_section
 from .models import Grade, Student
@@ -39,6 +39,32 @@ class StudentRepository:
         if section:
             statement = statement.where(func.upper(Student.section) == section.strip().upper())
         return self.session.scalar(statement) or 0
+
+    def academic_summary(self):
+        student_averages = (
+            select(Grade.student_id, func.avg(Grade.score).label("average"))
+            .group_by(Grade.student_id)
+            .subquery()
+        )
+        overview = self.session.execute(
+            select(
+                func.count(Student.id),
+                func.coalesce(func.avg(student_averages.c.average), 0),
+                func.coalesce(func.sum(case((student_averages.c.average < 60, 1), else_=0)), 0),
+            ).outerjoin(student_averages, Student.id == student_averages.c.student_id)
+        ).one()
+        sections = self.session.execute(
+            select(Student.section, func.count(Student.id))
+            .group_by(Student.section)
+            .order_by(Student.section)
+        ).all()
+        return {
+            "total_students": overview[0],
+            "general_average": round(float(overview[1]), 2),
+            "students_at_risk": overview[2],
+            "passing_students": overview[0] - overview[2],
+            "sections": [{"section": section, "total": total} for section, total in sections],
+        }
 
     def get(self, student_id):
         return self.session.get(Student, student_id)

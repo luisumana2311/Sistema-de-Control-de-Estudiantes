@@ -114,6 +114,11 @@ The service exposes its health check at `/health`, student CRUD under
 ReDoc documentation at `/redoc`. Student listings support search, section filters,
 and pagination.
 
+The root route `/` serves the responsive EduControl web application with a
+separate academic dashboard and student-management workspace. It includes live
+metrics, section distribution, academic-risk indicators, CRUD forms, filters,
+and pagination connected directly to the REST API.
+
 ## Main Menu
 
 ```text

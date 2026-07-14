@@ -1,4 +1,8 @@
+from pathlib import Path
+
 from fastapi import Depends, FastAPI, HTTPException, Query, Response, status
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -11,6 +15,8 @@ from .schemas import StudentListResponse, StudentPayload, StudentResponse
 engine = build_engine(pool_pre_ping=True)
 SessionFactory = build_session_factory(engine)
 app = FastAPI(title="Student Control System API", version="2.0.0", description="REST API for student records, grades and academic indicators.")
+WEB_DIR = Path(__file__).resolve().parent / "web"
+app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 
 
 def get_session():
@@ -30,6 +36,16 @@ def serialize_student(student):
 @app.get("/health", tags=["System"])
 def health():
     return {"status": "ok"}
+
+
+@app.get("/", include_in_schema=False)
+def web_app():
+    return FileResponse(WEB_DIR / "index.html")
+
+
+@app.get("/api/v1/dashboard", tags=["Dashboard"])
+def dashboard(session: Session = Depends(get_session)):
+    return StudentRepository(session).academic_summary()
 
 
 @app.get("/api/v1/students", response_model=StudentListResponse, tags=["Students"])

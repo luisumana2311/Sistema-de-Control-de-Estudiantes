@@ -51,6 +51,20 @@ class TestStudentApi(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"status": "ok"})
 
+    def test_serves_professional_web_application(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("EduControl", response.text)
+
+    def test_dashboard_returns_academic_summary(self):
+        self.client.post("/api/v1/students", json=VALID_STUDENT)
+        self.client.post("/api/v1/students", json={**VALID_STUDENT, "full_name": "Carlos Mora", "section": "11B", "spanish_grade": 40, "english_grade": 50, "social_studies_grade": 45, "science_grade": 55})
+        response = self.client.get("/api/v1/dashboard")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["total_students"], 2)
+        self.assertEqual(response.json()["students_at_risk"], 1)
+        self.assertEqual(len(response.json()["sections"]), 2)
+
     def test_complete_student_crud(self):
         create_response = self.client.post("/api/v1/students", json=VALID_STUDENT)
         self.assertEqual(create_response.status_code, 201)
