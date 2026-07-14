@@ -49,7 +49,7 @@ class TestStudentApi(unittest.TestCase):
     def test_health_check(self):
         response = self.client.get("/health")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"status": "ok"})
+        self.assertEqual(response.json(), {"status": "ok", "database": "connected"})
 
     def test_serves_professional_web_application(self):
         response = self.client.get("/")

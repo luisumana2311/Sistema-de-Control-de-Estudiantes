@@ -119,6 +119,21 @@ separate academic dashboard and student-management workspace. It includes live
 metrics, section distribution, academic-risk indicators, CRUD forms, filters,
 and pagination connected directly to the REST API.
 
+## Cloud deployment
+
+The included `render.yaml` provisions both the FastAPI web service and a private
+Render PostgreSQL database. It installs the package, applies Alembic migrations,
+starts Uvicorn on Render's assigned port, and monitors `/health`, which verifies
+both the API and its database connection.
+
+In Render, create a new Blueprint from this repository and select the `main`
+branch. Render injects the private database connection automatically; no password
+or connection string should be committed to GitHub.
+
+The Blueprint uses Render's free preview plans. Free PostgreSQL databases expire
+after 30 days and do not include backups; upgrade `educontrol-db` to at least
+`basic-256mb` before storing durable portfolio or production data.
+
 ## Main Menu
 
 ```text

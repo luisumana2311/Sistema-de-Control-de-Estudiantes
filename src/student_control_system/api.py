@@ -3,6 +3,7 @@ from pathlib import Path
 from fastapi import Depends, FastAPI, HTTPException, Query, Response, status
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -34,8 +35,13 @@ def serialize_student(student):
 
 
 @app.get("/health", tags=["System"])
-def health():
-    return {"status": "ok"}
+def health(response: Response, session: Session = Depends(get_session)):
+    try:
+        session.execute(text("SELECT 1"))
+        return {"status": "ok", "database": "connected"}
+    except Exception:
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+        return {"status": "degraded", "database": "unavailable"}
 
 
 @app.get("/", include_in_schema=False)

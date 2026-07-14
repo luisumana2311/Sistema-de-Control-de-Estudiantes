@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: educontrol-web
+    runtime: python
+    plan: free
+    buildCommand: pip install .
+    startCommand: alembic upgrade head && uvicorn student_control_system.api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: educontrol-db
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: 3.12.8
+
+databases:
+  - name: educontrol-db
+    plan: free
+    databaseName: educontrol
+    user: educontrol_app
+    ipAllowList: []

@@ -14,7 +14,10 @@ class Base(DeclarativeBase):
 
 
 def get_database_url():
-    return os.getenv("DATABASE_URL", DEFAULT_DATABASE_URL)
+    database_url = os.getenv("DATABASE_URL", DEFAULT_DATABASE_URL)
+    if database_url.startswith("postgresql://"):
+        return database_url.replace("postgresql://", "postgresql+psycopg://", 1)
+    return database_url
 
 
 def build_engine(database_url=None, **kwargs):
