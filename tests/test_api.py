@@ -100,3 +100,45 @@ class TestStudentApi(unittest.TestCase):
     def test_validates_payload(self):
         response = self.client.post("/api/v1/students", json={**VALID_STUDENT, "science_grade": 120})
         self.assertEqual(response.status_code, 422)
+
+    def test_top_failed_and_csv_endpoints(self):
+        self.client.post("/api/v1/students", json=VALID_STUDENT)
+        risk_student = {
+            **VALID_STUDENT,
+            "full_name": "Carlos Mora",
+            "section": "11B",
+            "spanish_grade": 40,
+            "english_grade": 80,
+        }
+        self.client.post("/api/v1/students", json=risk_student)
+
+        top = self.client.get("/api/v1/students/top")
+        self.assertEqual(top.status_code, 200)
+        self.assertEqual(top.json()[0]["full_name"], VALID_STUDENT["full_name"])
+
+        failed = self.client.get("/api/v1/students/failed")
+        self.assertEqual(failed.status_code, 200)
+        self.assertEqual(failed.json()[0]["failed_subjects"][0]["subject"], "Spanish")
+
+        exported = self.client.get("/api/v1/students/export")
+        self.assertEqual(exported.status_code, 200)
+        self.assertIn("full_name,section", exported.text)
+
+        csv_content = (
+            "full_name,section,spanish_grade,english_grade,"
+            "social_studies_grade,science_grade\n"
+            "Ana Rivera,12A,90,91,92,93\n"
+        )
+        imported = self.client.post(
+            "/api/v1/students/import",
+            files={"file": ("students.csv", csv_content, "text/csv")},
+        )
+        self.assertEqual(imported.status_code, 200)
+        self.assertEqual(imported.json()["imported"], 1)
+
+    def test_rejects_invalid_csv_file(self):
+        response = self.client.post(
+            "/api/v1/students/import",
+            files={"file": ("students.txt", "invalid", "text/plain")},
+        )
+        self.assertEqual(response.status_code, 400)

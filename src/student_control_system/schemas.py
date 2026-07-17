@@ -39,3 +39,10 @@ class StudentListResponse(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class ImportResult(BaseModel):
+    imported: int
+    skipped: int
+    errors: list[str]
+    message: str
