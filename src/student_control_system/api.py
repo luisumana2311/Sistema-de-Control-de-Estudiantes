@@ -1,9 +1,12 @@
 import logging
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
 from .database import get_session
 from .routes.students import router as students_router
@@ -33,8 +36,17 @@ async def unexpected_error_handler(request: Request, error: Exception):
 
 
 @app.get("/health", tags=["System"])
-def health():
-    return {"status": "ok"}
+def health(session: Session = Depends(get_session)):
+    """Comprueba que el proceso y la base de datos estén disponibles."""
+    try:
+        session.execute(text("SELECT 1"))
+    except SQLAlchemyError as error:
+        logger.warning("Database health check failed: %s", error)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database unavailable.",
+        ) from error
+    return {"status": "ok", "database": "connected"}
 
 
 @app.get("/", include_in_schema=False)

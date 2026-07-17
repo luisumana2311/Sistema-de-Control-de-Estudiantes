@@ -5,7 +5,13 @@ from sqlalchemy.orm import Session
 
 from ..database import get_session
 from ..repository import StudentRepository
-from ..schemas import ImportResult, StudentListResponse, StudentPayload, StudentResponse
+from ..schemas import (
+    FailedStudentResponse,
+    ImportResult,
+    StudentListResponse,
+    StudentPayload,
+    StudentResponse,
+)
 from ..services import StudentService
 
 
@@ -47,7 +53,7 @@ def top_students(session: Session = Depends(get_session)):
     return [service.serialize(item) for item in service.repository.top_students()]
 
 
-@router.get("/students/failed")
+@router.get("/students/failed", response_model=list[FailedStudentResponse])
 def failed_students(session: Session = Depends(get_session)):
     return StudentService(session).failed_students()
 
