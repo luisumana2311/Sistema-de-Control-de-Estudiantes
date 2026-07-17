@@ -29,8 +29,10 @@ class TestActions(unittest.TestCase):
 
     def test_validates_name(self):
         self.assertTrue(is_valid_name("Maria Lopez"))
+        self.assertTrue(is_valid_name("María O'Connor-Solano"))
         self.assertFalse(is_valid_name(""))
         self.assertFalse(is_valid_name("Maria 123"))
+        self.assertFalse(is_valid_name("=2+2"))
 
     def test_validates_section(self):
         self.assertTrue(is_valid_section("11B"))

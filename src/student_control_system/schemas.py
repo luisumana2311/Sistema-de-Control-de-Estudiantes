@@ -1,6 +1,10 @@
 from datetime import datetime
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from .actions import is_valid_name
 
 
 class StudentPayload(BaseModel):
@@ -15,8 +19,10 @@ class StudentPayload(BaseModel):
     @classmethod
     def validate_name(cls, value):
         clean = " ".join(value.split())
-        if any(character.isdigit() for character in clean):
-            raise ValueError("Name cannot contain numbers.")
+        if not is_valid_name(clean):
+            raise ValueError(
+                "El nombre solo puede contener letras, espacios, apóstrofes y guiones."
+            )
         return clean
 
     @field_validator("section")
@@ -29,7 +35,7 @@ class StudentResponse(StudentPayload):
     model_config = ConfigDict(from_attributes=True)
     id: str
     average: float
-    academic_status: str
+    academic_status: Literal["passing", "at_risk"]
     created_at: datetime
     updated_at: datetime
 
@@ -39,3 +45,19 @@ class StudentListResponse(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class ImportResult(BaseModel):
+    imported: int
+    skipped: int
+    errors: list[str]
+    message: str
+
+
+class FailedSubject(BaseModel):
+    subject: str
+    score: float
+
+
+class FailedStudentResponse(StudentResponse):
+    failed_subjects: list[FailedSubject]

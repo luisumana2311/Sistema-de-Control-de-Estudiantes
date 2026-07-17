@@ -22,7 +22,13 @@ GRADE_FIELD_NAMES = tuple(field_name for _, field_name in SUBJECTS)
 
 
 def is_valid_name(name):
-    return bool(name.strip()) and not any(char.isdigit() for char in name)
+    clean_name = " ".join(name.split())
+    allowed_separators = {" ", "-", "'"}
+    return (
+        2 <= len(clean_name) <= 120
+        and any(char.isalpha() for char in clean_name)
+        and all(char.isalpha() or char in allowed_separators for char in clean_name)
+    )
 
 
 def is_valid_section(section):

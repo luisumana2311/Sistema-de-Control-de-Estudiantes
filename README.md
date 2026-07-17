@@ -1,214 +1,232 @@
-# Student Control System
+# EduControl
 
-![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
-![Tests](https://img.shields.io/badge/tests-unittest-green)
-![Status](https://img.shields.io/badge/status-portfolio%20ready-brightgreen)
+Sistema de control académico construido con Python y FastAPI. Permite administrar expedientes estudiantiles, consultar indicadores de rendimiento e importar o exportar información en CSV desde una interfaz web responsiva.
 
-A Python console application for managing student records, grades, academic averages, CSV import/export, search, editing, and academic reports.
+El proyecto conserva la aplicación de consola original y reutiliza sus reglas de validación y cálculo. La interfaz web utiliza persistencia relacional mediante SQLAlchemy y migraciones versionadas con Alembic.
 
-This project started as a fundamentals exercise and is being improved as a professional junior/full-stack portfolio project. The current version keeps the original console experience while adding cleaner structure, validations, error handling, tests, and project documentation.
+## Características
 
-## Features
+- Dashboard con matrícula total, promedio general, aprobados y estudiantes en riesgo.
+- Distribución de estudiantes por sección.
+- Registro, consulta, edición y eliminación de expedientes.
+- Búsqueda por nombre, filtro por sección y paginación.
+- Calificaciones por materia y promedio individual.
+- Reportes de los tres mejores promedios y materias reprobadas.
+- Importación y exportación CSV con validación y control de duplicados.
+- Datos de demostración idempotentes.
+- Mensajes claros, estados vacíos y diseño adaptable a dispositivos móviles.
+- API REST con documentación OpenAPI.
+- Aplicación de consola original disponible.
 
-- Register students with full name and section.
-- Validate names, sections, grades, menu options, and confirmations.
-- Search students by full or partial name.
-- Edit an existing student's name, section, and grades.
-- Show all registered students with subject grades and average.
-- Show the top 3 students by average.
-- Calculate the general class average.
-- Delete students with confirmation.
-- Show students with failed subjects.
-- Export student records to CSV.
-- Import student records from CSV.
-- Display reports in aligned console tables.
+## Tecnologías
 
-## Technologies
+- Python 3.11+
+- FastAPI y Uvicorn
+- SQLAlchemy 2
+- Alembic
+- PostgreSQL con Psycopg 3
+- SQLite para desarrollo local y pruebas
+- Pydantic 2
+- HTML5, CSS y JavaScript
+- `unittest` y FastAPI TestClient
+- Railway Railpack para un futuro despliegue sin Docker
 
-- Python 3
-- Python standard-library modules:
-  - `csv`
-  - `os`
-  - `re`
-  - `unittest`
-  - `unittest.mock`
-- PostgreSQL as the production database
-- SQLAlchemy 2 for ORM and repository-based persistence
-- Alembic for versioned database migrations
-- FastAPI with automatic OpenAPI documentation
-
-## Project Structure
+## Arquitectura
 
 ```text
-student_control_system/
-+-- .github/workflows/       # GitHub Actions CI
-+-- docs/                    # Portfolio documentation and screenshots
-+-- src/
-|   +-- student_control_system/
-|       +-- actions.py        # Business rules, validation, reports, and operations
-|       +-- data.py           # CSV persistence
-|       +-- menu.py           # Console menu and user flow
-|       +-- __init__.py       # Package marker
-+-- tests/                    # Unit tests
-+-- main.py                   # Console entry point
-+-- CHANGELOG.md              # Project history
-+-- CONTRIBUTING.md           # Contribution guidelines
-+-- README.md                 # Project documentation
+Navegador / cliente API
+          │
+          ▼
+     Rutas FastAPI
+          │
+          ▼
+       Servicios
+          │
+          ▼
+     Repositorios
+          │
+          ▼
+ SQLAlchemy ── PostgreSQL / SQLite
 ```
 
-## Installation
+- `routes`: contratos HTTP, parámetros y códigos de respuesta.
+- `services`: casos de uso, serialización e importación/exportación.
+- `repository`: consultas y persistencia.
+- `models`: entidades SQLAlchemy y restricciones.
+- `schemas`: validación y respuestas Pydantic.
+- `actions`: reglas académicas compartidas con la consola.
 
-1. Clone the repository:
+## Estructura del proyecto
 
-```bash
-git clone <repository-url>
-cd student_control_system
+```text
+.
+├── .github/workflows/       # integración continua
+├── docs/screenshots/        # capturas para el portafolio
+├── migrations/              # configuración y versiones Alembic
+├── src/student_control_system/
+│   ├── routes/              # endpoints FastAPI
+│   ├── web/                 # interfaz HTML, CSS y JavaScript
+│   ├── actions.py           # reglas de negocio compartidas
+│   ├── api.py               # aplicación FastAPI
+│   ├── config.py            # carga de variables de entorno
+│   ├── database.py          # engine y sesiones SQLAlchemy
+│   ├── demo_data.py         # datos de demostración
+│   ├── models.py            # modelos ORM
+│   ├── repository.py        # acceso a datos
+│   ├── schemas.py           # esquemas Pydantic
+│   └── services.py          # casos de uso
+├── tests/                   # pruebas unitarias y de endpoints
+├── main.py                  # aplicación de consola
+├── alembic.ini
+├── pyproject.toml
+└── railway.toml             # configuración futura de Railway
 ```
 
-2. Optional: create and activate a virtual environment.
+## Instalación local en Windows PowerShell
 
-Windows:
+### 1. Crear y activar el entorno virtual
 
-```bash
+```powershell
 python -m venv .venv
-.venv\Scripts\activate
+.\.venv\Scripts\Activate.ps1
 ```
 
-macOS/Linux:
+Si la política de PowerShell impide activarlo:
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
 ```
 
-3. Run the application:
+### 2. Instalar el proyecto
 
-```bash
-python main.py
+```powershell
+python -m pip install --upgrade pip
+python -m pip install -e ".[test]"
 ```
 
-### Database foundation
+### 3. Configurar la base de datos
 
-Copy `.env.example` to `.env`, configure a PostgreSQL connection through
-`DATABASE_URL`, install the project dependencies, and apply migrations:
+```powershell
+Copy-Item .env.example .env
+```
 
-```bash
-python -m pip install -e .
+Para PostgreSQL:
+
+```dotenv
+DATABASE_URL=postgresql+psycopg://student_app:tu_contrasena@localhost:5432/student_control
+```
+
+Para una demostración local con SQLite:
+
+```dotenv
+DATABASE_URL=sqlite:///./student_control.db
+```
+
+Si `DATABASE_URL` no está definida fuera de Railway, la aplicación usa SQLite local. En Railway la variable es obligatoria para evitar utilizar accidentalmente almacenamiento efímero.
+
+### 4. Ejecutar migraciones
+
+```powershell
 alembic upgrade head
 ```
 
-The console workflow remains available while the PostgreSQL repository provides
-the persistence foundation for the REST API. SQLite is used only by
-isolated repository tests, not as the target production database.
+### 5. Cargar datos de demostración
 
-### REST API
+```powershell
+python -m student_control_system.demo_data
+```
 
-Start the API after configuring PostgreSQL and applying the migrations:
+El comando agrega diez estudiantes distribuidos en varias secciones. Puede repetirse de forma segura: los registros existentes se omiten.
 
-```bash
+### 6. Iniciar la aplicación
+
+```powershell
 uvicorn student_control_system.api:app --reload
 ```
 
-The service exposes its health check at `/health`, student CRUD under
-`/api/v1/students`, interactive Swagger documentation at `/docs`, and alternative
-ReDoc documentation at `/redoc`. Student listings support search, section filters,
-and pagination.
+Servicios disponibles:
 
-The root route `/` serves the responsive EduControl web application with a
-separate academic dashboard and student-management workspace. It includes live
-metrics, section distribution, academic-risk indicators, CRUD forms, filters,
-and pagination connected directly to the REST API.
+- Aplicación web: <http://localhost:8000>
+- Swagger UI: <http://localhost:8000/docs>
+- ReDoc: <http://localhost:8000/redoc>
+- Estado del servicio y base de datos: <http://localhost:8000/health>
 
-## Main Menu
+## Aplicación de consola
 
-```text
-1. Add students
-2. Show all students
-3. Search student by name
-4. Edit student
-5. Show top 3 students
-6. Show general average
-7. Export data to CSV
-8. Import data from CSV
-9. Delete student
-10. Show failed students
-11. Exit
+```powershell
+python main.py
 ```
 
-## Running Tests
+La consola mantiene registro, listado, búsqueda, edición, reportes, eliminación e importación/exportación CSV. Su comportamiento histórico no depende de la base de datos web.
 
-```bash
-python -m unittest discover
+## Variables de entorno
+
+| Variable | Entorno | Descripción |
+|---|---|---|
+| `DATABASE_URL` | Local | Opcional; si falta, usa `sqlite:///./student_control.db`. |
+| `DATABASE_URL` | Railway | Obligatoria; debe referenciar el servicio PostgreSQL. |
+| `PORT` | Railway | La proporciona Railway y es utilizada por `railway.toml`. |
+
+`.env`, archivos SQLite y entornos virtuales están ignorados por Git. Nunca agregues credenciales reales al repositorio.
+
+## Pruebas
+
+```powershell
+python -m unittest discover -v
 ```
 
-Tests also run automatically through GitHub Actions on pushes and pull requests.
+Las pruebas cubren:
 
-## CSV Format
+- validaciones y cálculos académicos;
+- CRUD y filtros;
+- dashboard y reportes;
+- importación/exportación CSV;
+- repositorios y restricciones;
+- carga idempotente de datos;
+- normalización de la URL PostgreSQL de Railway;
+- health check con conexión a la base de datos.
 
-The CSV file uses the following columns:
+## Despliegue futuro en Railway
 
-```text
-full_name,section,spanish_grade,english_grade,social_studies_grade,science_grade
-```
+El repositorio incluye `railway.toml` y utiliza Railpack; no requiere Docker.
 
-Grades must be numeric values between `0` and `100`.
+1. Crea un proyecto en Railway desde el repositorio de GitHub.
+2. Agrega un servicio PostgreSQL.
+3. Define `DATABASE_URL` en el servicio web usando la referencia del PostgreSQL.
+4. Railway ejecutará `alembic upgrade head` antes de publicar.
+5. El proceso inicia con:
 
-## Screenshots
+   ```text
+   uvicorn student_control_system.api:app --host 0.0.0.0 --port $PORT
+   ```
 
-Screenshots can be added here as the UI evolves.
+6. El health check se realiza contra `/health`.
+7. Genera un dominio público y verifica `/`, `/docs` y `/health`.
 
-Suggested screenshots:
+No cargues datos demo automáticamente en producción. Si los necesitas para una presentación, ejecuta el comando manualmente una sola vez desde un entorno controlado.
 
-- Main menu.
-- Student registration flow.
-- Search results.
-- Edit student flow.
-- Student list.
-- Top 3 students report.
-- Failed students report.
+## Capturas
+
+Ubicación: [`docs/screenshots`](docs/screenshots)
+
+Marcadores pendientes:
+
+- `dashboard.png`
+- `students.png`
+- `student-form.png`
+- `reports.png`
+- `swagger.png`
 
 ```md
-![Main menu](docs/screenshots/main-menu.png)
-![Student list](docs/screenshots/student-list.png)
-![Search results](docs/screenshots/search-results.png)
+![Dashboard](docs/screenshots/dashboard.png)
+![Gestión de estudiantes](docs/screenshots/students.png)
 ```
 
-More screenshot guidance is available in [docs/README.md](docs/README.md).
+## Decisiones y limitaciones
 
-## Roadmap
-
-### P0 - Professional Foundation
-
-- [x] Add professional README.
-- [x] Add `.gitignore`.
-- [x] Remove generated Python cache files from version control.
-- [x] Improve validation and CSV error handling.
-- [x] Add basic unit tests.
-
-### P1 - Functional Improvements
-
-- [x] Add edit-student functionality.
-- [x] Add search by student name.
-- [x] Improve console formatting for reports.
-- [x] Add clearer menu validation.
-- [ ] Add automatic loading or save confirmation.
-- [ ] Add filters by section or academic status.
-- [ ] Add summary reports by section.
-
-### P2 - Portfolio Differentiators
-
-- [x] Reorganize into a `src/` package architecture.
-- [x] Add CI with GitHub Actions.
-- [x] Add documentation folder for screenshots.
-- [x] Add CHANGELOG and CONTRIBUTING files.
-- [ ] Add code formatting and linting.
-- [ ] Add a web UI or REST API while reusing the domain logic.
-- [ ] Add real screenshots and a short architecture section.
-
-## GitHub Best Practices
-
-- Keep generated files out of version control.
-- Use small, descriptive commits.
-- Document setup and test commands.
-- Keep business logic separate from input/output code where possible.
-- Add tests for validation and data persistence behavior.
+- PostgreSQL es la base de datos objetivo de producción.
+- SQLite se conserva para desarrollo y pruebas.
+- No se implementó autenticación ni autorización; quedan fuera del alcance actual.
+- La consola usa memoria/CSV para preservar compatibilidad.
+- El despliegue debe validarse primero en un entorno de Railway separado de producción.

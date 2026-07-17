@@ -33,6 +33,7 @@ class TestStudentApi(unittest.TestCase):
             finally:
                 session.close()
 
+        cls.override_session = staticmethod(override_session)
         app.dependency_overrides[get_session] = override_session
         cls.client = TestClient(app)
 
@@ -42,6 +43,7 @@ class TestStudentApi(unittest.TestCase):
         cls.engine.dispose()
 
     def setUp(self):
+        app.dependency_overrides[get_session] = self.override_session
         with self.engine.begin() as connection:
             for table in reversed(Base.metadata.sorted_tables):
                 connection.execute(table.delete())
@@ -49,7 +51,25 @@ class TestStudentApi(unittest.TestCase):
     def test_health_check(self):
         response = self.client.get("/health")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"status": "ok"})
+        self.assertEqual(
+            response.json(),
+            {"status": "ok", "database": "connected"},
+        )
+
+    def test_health_check_reports_database_failure(self):
+        class UnavailableSession:
+            def execute(self, _statement):
+                from sqlalchemy.exc import OperationalError
+
+                raise OperationalError("SELECT 1", {}, Exception("offline"))
+
+        def unavailable_session():
+            yield UnavailableSession()
+
+        app.dependency_overrides[get_session] = unavailable_session
+        response = self.client.get("/health")
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json(), {"detail": "Database unavailable."})
 
     def test_serves_professional_web_application(self):
         response = self.client.get("/")
@@ -100,3 +120,54 @@ class TestStudentApi(unittest.TestCase):
     def test_validates_payload(self):
         response = self.client.post("/api/v1/students", json={**VALID_STUDENT, "science_grade": 120})
         self.assertEqual(response.status_code, 422)
+
+    def test_rejects_unsafe_or_empty_names(self):
+        for invalid_name in ("  ", "=2+2", "Student 123", "@@"):
+            with self.subTest(name=invalid_name):
+                response = self.client.post(
+                    "/api/v1/students",
+                    json={**VALID_STUDENT, "full_name": invalid_name},
+                )
+                self.assertEqual(response.status_code, 422)
+
+    def test_top_failed_and_csv_endpoints(self):
+        self.client.post("/api/v1/students", json=VALID_STUDENT)
+        risk_student = {
+            **VALID_STUDENT,
+            "full_name": "Carlos Mora",
+            "section": "11B",
+            "spanish_grade": 40,
+            "english_grade": 80,
+        }
+        self.client.post("/api/v1/students", json=risk_student)
+
+        top = self.client.get("/api/v1/students/top")
+        self.assertEqual(top.status_code, 200)
+        self.assertEqual(top.json()[0]["full_name"], VALID_STUDENT["full_name"])
+
+        failed = self.client.get("/api/v1/students/failed")
+        self.assertEqual(failed.status_code, 200)
+        self.assertEqual(failed.json()[0]["failed_subjects"][0]["subject"], "Spanish")
+
+        exported = self.client.get("/api/v1/students/export")
+        self.assertEqual(exported.status_code, 200)
+        self.assertIn("full_name,section", exported.text)
+
+        csv_content = (
+            "full_name,section,spanish_grade,english_grade,"
+            "social_studies_grade,science_grade\n"
+            "Ana Rivera,12A,90,91,92,93\n"
+        )
+        imported = self.client.post(
+            "/api/v1/students/import",
+            files={"file": ("students.csv", csv_content, "text/csv")},
+        )
+        self.assertEqual(imported.status_code, 200)
+        self.assertEqual(imported.json()["imported"], 1)
+
+    def test_rejects_invalid_csv_file(self):
+        response = self.client.post(
+            "/api/v1/students/import",
+            files={"file": ("students.txt", "invalid", "text/plain")},
+        )
+        self.assertEqual(response.status_code, 400)

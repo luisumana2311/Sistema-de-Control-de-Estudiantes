@@ -66,6 +66,22 @@ class StudentRepository:
             "sections": [{"section": section, "total": total} for section, total in sections],
         }
 
+    def top_students(self, limit=3):
+        students = self.list_all(offset=0, limit=10_000)
+        return sorted(
+            students,
+            key=lambda student: sum(grade.score for grade in student.grades) / len(student.grades),
+            reverse=True,
+        )[:limit]
+
+    def students_with_failed_subjects(self):
+        students = self.list_all(offset=0, limit=10_000)
+        return [
+            student
+            for student in students
+            if any(grade.score < 60 for grade in student.grades)
+        ]
+
     def get(self, student_id):
         return self.session.get(Student, student_id)
 
